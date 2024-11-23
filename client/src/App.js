@@ -172,48 +172,52 @@ function App() {
   }, [currentAccount, correctNetwork]);
 
   return (
-    <div>
+    <div className="App">
       {currentAccount === "" ? (
-        <center>
-          <button className="button" onClick={connectWallet}>
+        <div className="connect-container">
+          <h1>Decentralized Todo List</h1>
+          <button className="connect-button" onClick={connectWallet}>
             Connect Wallet
           </button>
-        </center>
+        </div>
       ) : correctNetwork ? (
-        <div className="App">
+        <>
           <div className="wallet-header">
-            <h2>Task Management App</h2>
+            <h2>Decentralized Todo List</h2>
             <div className="wallet-info">
               <p>
-                Connected Wallet: {currentAccount.slice(0, 6)}...
-                {currentAccount.slice(-4)}
+                {currentAccount.slice(0, 6)}...{currentAccount.slice(-4)}
               </p>
               <button className="disconnect-button" onClick={disconnectWallet}>
-                Disconnect Wallet
+                Disconnect
               </button>
             </div>
           </div>
-          <form>
+
+          <form className="task-form">
             <TextField
-              id="outlined-basic"
-              label="Task"
+              className="task-input"
+              label="New Task"
               variant="outlined"
-              style={{ margin: "0px 5px" }}
-              size="small"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isLoading}
             />
             <Button
               variant="contained"
-              color="primary"
               onClick={addTask}
               disabled={isLoading}
+              style={{
+                background: "linear-gradient(45deg, #4E38D8 0%, #6C4EE6 100%)",
+                borderRadius: "12px",
+                padding: "10px 30px",
+              }}
             >
               Add Task
             </Button>
           </form>
-          <ul>
+
+          <div className="task-list">
             {tasks.map((item) => (
               <Task
                 key={item.id}
@@ -222,11 +226,20 @@ function App() {
                 disabled={isLoading}
               />
             ))}
-          </ul>
-        </div>
+          </div>
+
+          {isLoading && (
+            <div className="loading-overlay">
+              <div className="loading-spinner" />
+            </div>
+          )}
+        </>
       ) : (
-        <div className="flex flex-col justify-center items-center mb-20 font-bold text-2xl gap-y-3">
-          <div>Please connect to the Sepolia Testnet and reload the screen</div>
+        <div className="connect-container">
+          <h2>Please connect to Sepolia Testnet</h2>
+          <button className="connect-button" onClick={connectWallet}>
+            Switch Network
+          </button>
         </div>
       )}
     </div>
