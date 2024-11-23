@@ -1,7 +1,7 @@
-import { List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
+import { List, ListItem, ListItemText } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import "./Task.css";
-const Task = ({ taskText, onClick }) => {
+const Task = ({ taskText, onClick, disabled }) => {
   return (
     <>
       <List className="todo__list">
@@ -10,9 +10,10 @@ const Task = ({ taskText, onClick }) => {
         </ListItem>
         <DeleteIcon
           fontSize="large"
-          style={{ opacity: 0.7 }}
-          onClick={onClick}
-        ></DeleteIcon>
+          style={{ opacity: disabled ? 0.5 : 0.7 }}
+          onClick={disabled ? undefined : onClick}
+          className={disabled ? "disabled-icon" : ""}
+        />
       </List>
     </>
   );

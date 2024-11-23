@@ -13,85 +13,94 @@ function App() {
   const [currentAccount, setCurrentAccount] = useState("");
 
   const [correctNetwork, setCorrectNetwork] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const connectWallet = async () => {
     try {
       const { ethereum } = window;
       if (!ethereum) {
-        console.log("Metamask not detected");
-      }
-      let chainId = await ethereum.request({ method: "eth_chainId" });
-      console.log("Connected to chain:" + chainId);
-      const sepoliaChainId = "0xaa36a7";
-      if (chainId !== sepoliaChainId) {
-        alert("You are not connected to the Sepolia Test Network!");
+        alert("Silakan install MetaMask!");
         return;
-      } else {
-        setCorrectNetwork(true);
+      }
+
+      const chainId = await ethereum.request({ method: "eth_chainId" });
+      const sepoliaChainId = "0xaa36a7";
+
+      if (chainId !== sepoliaChainId) {
+        alert("Silakan hubungkan ke Sepolia Test Network!");
+        try {
+          await ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: sepoliaChainId }],
+          });
+        } catch (switchError) {
+          return;
+        }
       }
 
       const accounts = await ethereum.request({
         method: "eth_requestAccounts",
       });
-      console.log("Connected", accounts[0]);
-      setCurrentAccount(accounts[0]);
+      if (accounts && accounts[0]) {
+        setCurrentAccount(accounts[0]);
+        setCorrectNetwork(true);
+      }
     } catch (error) {
       console.log("Error connecting to metamask", error);
+      alert("Gagal terhubung ke wallet. Silakan coba lagi.");
     }
   };
 
   const addTask = async (e) => {
     e.preventDefault();
-    let task = {
-      taskText: input,
-      isDeleted: false,
-    };
+    if (!input.trim()) return;
+
     try {
       const { ethereum } = window;
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
+        const provider = new ethers.BrowserProvider(ethereum);
+        const signer = await provider.getSigner();
         const taskContract = new ethers.Contract(
           TaskContractAddress,
-          TaskAbi,
+          TaskAbi.abi,
           signer
         );
-        taskContract
-          .addTask(task.taskText, task.isDeleted)
-          .then((response) => {
-            setTasks([...tasks, task]);
-          })
-          .catch((error) => {
-            console.log("Error adding task", error);
-          });
-      } else {
-        console.log("Ethereum object not found");
+
+        setIsLoading(true);
+        const tx = await taskContract.addTask(input, false);
+        await tx.wait();
+
+        await getAllTasks();
+        setInput("");
       }
     } catch (error) {
-      console.log("Error submitting the task", error);
+      console.log("Error adding task:", error);
+    } finally {
+      setIsLoading(false);
     }
-    setInput("");
   };
 
   const deleteTask = (key) => async () => {
     try {
       const { ethereum } = window;
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
+        const provider = new ethers.BrowserProvider(ethereum);
+        const signer = await provider.getSigner();
         const taskContract = new ethers.Contract(
           TaskContractAddress,
-          TaskAbi,
+          TaskAbi.abi,
           signer
         );
-        let deleteTaskTx = await taskContract.deleteTask(key, true);
-        let allTasks = await taskContract.getMyTasks();
-        setTasks(allTasks);
+        setIsLoading(true);
+        await taskContract.deleteTask(key, true);
+        await getAllTasks();
       } else {
         console.log("Ethereum object not found");
       }
     } catch (error) {
       console.log("Error deleting task", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -99,27 +108,68 @@ function App() {
     try {
       const { ethereum } = window;
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
+        const provider = new ethers.BrowserProvider(ethereum);
+        const signer = await provider.getSigner();
         const taskContract = new ethers.Contract(
           TaskContractAddress,
-          TaskAbi,
+          TaskAbi.abi,
           signer
         );
-        let allTasks = await taskContract.getMyTasks();
-        setTasks(allTasks);
-      } else {
-        console.log("Ethereum object not found");
+
+        const allTasks = await taskContract.getMyTasks();
+        if (Array.isArray(allTasks)) {
+          const formattedTasks = allTasks.map((task) => ({
+            id: Number(task.id),
+            taskText: task.taskText,
+            isDeleted: task.isDeleted,
+          }));
+          setTasks(formattedTasks);
+        } else {
+          setTasks([]);
+        }
       }
     } catch (error) {
       console.log("Error getting all tasks", error);
+      setTasks([]);
     }
   };
 
+  const disconnectWallet = () => {
+    setCurrentAccount("");
+    setCorrectNetwork(false);
+    setTasks([]);
+  };
+
   useEffect(() => {
-    getAllTasks();
-    connectWallet();
+    const checkWalletConnection = async () => {
+      try {
+        const { ethereum } = window;
+        if (ethereum) {
+          const accounts = await ethereum.request({ method: "eth_accounts" });
+          if (accounts.length > 0) {
+            const chainId = await ethereum.request({ method: "eth_chainId" });
+            const sepoliaChainId = "0xaa36a7";
+
+            if (chainId === sepoliaChainId) {
+              setCurrentAccount(accounts[0]);
+              setCorrectNetwork(true);
+            }
+          }
+        }
+      } catch (error) {
+        console.log("Error checking wallet connection:", error);
+      }
+    };
+
+    checkWalletConnection();
   }, []);
+
+  useEffect(() => {
+    if (currentAccount !== "" && correctNetwork) {
+      getAllTasks();
+    }
+  }, [currentAccount, correctNetwork]);
+
   return (
     <div>
       {currentAccount === "" ? (
@@ -130,7 +180,18 @@ function App() {
         </center>
       ) : correctNetwork ? (
         <div className="App">
-          <h2>Task Management App</h2>
+          <div className="wallet-header">
+            <h2>Task Management App</h2>
+            <div className="wallet-info">
+              <p>
+                Connected Wallet: {currentAccount.slice(0, 6)}...
+                {currentAccount.slice(-4)}
+              </p>
+              <button className="disconnect-button" onClick={disconnectWallet}>
+                Disconnect Wallet
+              </button>
+            </div>
+          </div>
           <form>
             <TextField
               id="outlined-basic"
@@ -140,9 +201,15 @@ function App() {
               size="small"
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              disabled={isLoading}
             />
-            <Button variant="contained" color="primary" onClick={addTask}>
-              Add Task
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={addTask}
+              disabled={isLoading}
+            >
+              {isLoading ? "Adding..." : "Add Task"}
             </Button>
           </form>
           <ul>
@@ -151,7 +218,8 @@ function App() {
                 key={item.id}
                 taskText={item.taskText}
                 onClick={deleteTask(item.id)}
-              ></Task>
+                disabled={isLoading}
+              />
             ))}
           </ul>
         </div>

@@ -36,3 +36,31 @@
     transform: rotate(360deg);
   }
 }
+
+.wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.disconnect-button {
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.disconnect-button:hover {
+  background-color: #cc0000;
+}

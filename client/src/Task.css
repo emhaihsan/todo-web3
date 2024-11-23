@@ -19,3 +19,7 @@
   margin-top: 20%;
   align-items: center;
 }
+
+.disabled-icon {
+  cursor: not-allowed;
+}
