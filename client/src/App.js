@@ -141,6 +141,31 @@ function App() {
     setTasks([]);
   };
 
+  const editTask = (taskId) => async (newText) => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.BrowserProvider(ethereum);
+        const signer = await provider.getSigner();
+        const taskContract = new ethers.Contract(
+          TaskContractAddress,
+          TaskAbi.abi,
+          signer
+        );
+
+        setIsLoading(true);
+        const tx = await taskContract.editTask(taskId, newText);
+        await tx.wait();
+
+        await getAllTasks();
+      }
+    } catch (error) {
+      console.log("Error editing task:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const checkWalletConnection = async () => {
       try {
@@ -223,6 +248,7 @@ function App() {
                 key={item.id}
                 taskText={item.taskText}
                 onClick={deleteTask(item.id)}
+                onEdit={editTask(item.id)}
                 disabled={isLoading}
               />
             ))}

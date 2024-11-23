@@ -5,7 +5,7 @@ A decentralized Todo List application built with Ethereum Smart Contract and Rea
 ## 🌟 Features
 
 - MetaMask wallet integration
-- Decentralized task management
+- Decentralized todo list
 - Sepolia Testnet support
 - Real-time updates after each transaction
 
@@ -82,7 +82,7 @@ The main `TaskContract.sol` has the following functions:
 1. Open the application in your browser
 2. Connect your MetaMask wallet
 3. Ensure you're connected to Sepolia Testnet
-4. Start adding and deleting tasks
+4. Start adding, editing and deleting tasks
 
 ## 🧪 Testing
 

@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 contract TaskContract {
     event AddTask(address recipient, uint taskId);
     event DeleteTask(uint taskId, bool isDeleted);
+    event EditTask(uint taskId, string newText);
 
     struct Task {
         uint id;
@@ -20,6 +21,13 @@ contract TaskContract {
         tasks.push(Task(taskId, taskText, isDeteled));
         taskToOwner[taskId] = msg.sender;
         emit AddTask(taskToOwner[taskId], taskId);
+    }
+
+    function editTask(uint taskId, string memory newText) external {
+        if (taskToOwner[taskId] == msg.sender && !tasks[taskId].isDeleted) {
+            tasks[taskId].taskText = newText;
+            emit EditTask(taskId, newText);
+        }
     }
 
     function deleteTask(uint taskId, bool isDeleted) external {

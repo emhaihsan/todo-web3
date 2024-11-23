@@ -1,29 +1,35 @@
-.todo__list {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(5px);
-  border-radius: 12px !important;
-  margin: 15px 0 !important;
-  padding: 15px !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+.task-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-.todo__list:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.delete-icon {
-  color: #ff4b4b;
+.edit-icon {
+  color: #4e38d8;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.delete-icon:hover {
+.edit-icon:hover {
   transform: scale(1.1);
 }
 
-.disabled-icon {
-  opacity: 0.5;
-  cursor: not-allowed;
+.cancel-icon {
+  color: #ff9800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-icon:hover {
+  transform: scale(1.1);
+}
+
+.edit-input {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 5px 10px;
+}
+
+.edit-input input {
+  color: white !important;
 }
