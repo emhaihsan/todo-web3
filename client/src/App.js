@@ -91,14 +91,15 @@ function App() {
           TaskAbi.abi,
           signer
         );
+
         setIsLoading(true);
-        await taskContract.deleteTask(key, true);
+        const tx = await taskContract.deleteTask(key, true);
+        await tx.wait();
+
         await getAllTasks();
-      } else {
-        console.log("Ethereum object not found");
       }
     } catch (error) {
-      console.log("Error deleting task", error);
+      console.log("Error deleting task:", error);
     } finally {
       setIsLoading(false);
     }
@@ -209,7 +210,7 @@ function App() {
               onClick={addTask}
               disabled={isLoading}
             >
-              {isLoading ? "Adding..." : "Add Task"}
+              Add Task
             </Button>
           </form>
           <ul>

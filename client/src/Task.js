@@ -10,7 +10,10 @@ const Task = ({ taskText, onClick, disabled }) => {
         </ListItem>
         <DeleteIcon
           fontSize="large"
-          style={{ opacity: disabled ? 0.5 : 0.7 }}
+          style={{
+            opacity: disabled ? 0.5 : 0.7,
+            cursor: disabled ? "not-allowed" : "pointer",
+          }}
           onClick={disabled ? undefined : onClick}
           className={disabled ? "disabled-icon" : ""}
         />
